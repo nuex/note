@@ -36,25 +36,20 @@ Use the `-d` option to set a custom directory for notes. You can create an alias
     # create a new note in an editor
     note new -t tag -t tag2 -t anothertag
 
-    # update note 1
-    cat <<! | note update 1
-    This is my updated note.
-    !
-
     # edit note 1
     note edit 1
 
     # get notes matching the tag "nice"
-    note all nice
+    note list nice
 
     # get all notes
-    note all
+    note list
 
     # get all notes in a different directory
-    note all -d directory
+    note list -d directory
 
     # get a note by its ID
-    note get 2
+    note show 2
 
     # delete note 2
     note delete 2
@@ -63,8 +58,8 @@ Use the `-d` option to set a custom directory for notes. You can create an alias
 
 For example, to use note to store bookmarks, use the following alias:
 
-    alias bmark="note -d ~/.bmark -validate"
+    alias bmark="note -d ~/.bmark"
 
 Add a bookmark:
 
-    echo "http://nu-ex.com" | bmark -t nerd
+    echo "http://nu-ex.com" | bmark new -t nerd
