@@ -40,7 +40,7 @@ Use the `-d` option to set a custom directory for notes. You can create an alias
     note edit 1
 
     # get notes matching the tag "nice"
-    note list nice
+    note list -t nice
 
     # get all notes
     note list
