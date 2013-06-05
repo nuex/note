@@ -1,0 +1,167 @@
+#!/bin/sh
+# note - taggable notes
+
+_note_error() {
+  echo -e ">>> ERROR: $*" >&2
+  exit 1
+}
+
+_note_not_found_error() {
+  _note_error "Note with id \"$id\" not found"
+}
+
+# Store a note
+_note_new() {
+  mkdir -p "$notedir"
+  id="$(__note_gen_id)"
+  file="$(__note_file "$id")"
+
+  if [ -t 0 ]; then
+    [ "$VISUAL" ] && exec "$VISUAL" "$file"
+    _note_error "Could not open editor. Is \$VISUAL set?"
+  else
+    while read -r line; do
+      echo "$line" >> "$file"
+    done
+  fi
+
+  # Track the new id
+  echo $id > "$lastid_file"
+}
+
+# Show a note
+_note_show() {
+  id="$1"; shift
+  note="$(__note_find "$id")"
+  if [ "$note" ]; then
+    cat "$note"
+  else
+    _note_not_found_error
+  fi
+}
+
+# List notes
+_note_list() {
+  set -- -type f
+  find_instructions="$(echo "$tags" | sed 's/ / or /g')"
+  for instruction in $find_cmd; do
+    if [ "$instruction" == "or" ]; then
+      set -- "$@" -o
+    else
+      set -- "$@" -name "*$instruction*"
+    fi
+  done
+  set -- "$@" ! -name ".note_lastid"
+  find "$notedir" "$@" |
+  while read f; do
+    fonly=${f##*/}
+    fid=$(echo "$fonly" | awk -F '_' '{ print $1 }')
+    ftags=$(echo "$fonly" | sed "s/^${fid}_//g" | sed "s/_/ /g")
+    lines=$(wc -l "$f" | awk '{ print $1 }')
+    echo "===> Note $fid [lines: $lines, tags: $ftags] <==="
+    head -3 "$f"
+    echo
+  done
+}
+
+# Edit a note
+_note_edit() {
+  id="$1"; shift
+  note="$(__note_find "$id")"
+  if [ "$note" ]; then
+    exec "$VISUAL" "$note"
+  else
+    _note_not_found_error
+  fi
+}
+
+# Delete a note
+_note_delete() {
+  id="$1"; shift
+  find "$notedir" -type f -name "${id}_*" -delete || _note_not_found_error
+}
+
+_note_usage() {
+  cat <<!
+Usage: t action [options]
+actions:
+    new - create a note
+    show - display a note
+    list - display a listing of notes
+    edit - edit a note
+    delete - delete a note
+
+Examples:
+
+    note new -t tag -t tag2
+    note new -t tag1 -t tag2 -d ~/.bookmarks
+    note show [id]
+    note list -t tag
+    note edit [id]
+    note delete [id]
+!
+}
+
+# Generate a note file path
+__note_file() {
+  id="$1"; shift
+  echo "${notedir}/${id}_$(__note_formatted_tags)"
+}
+
+# Find a note
+__note_find() {
+  id="$1"; shift
+  find "$notedir" -type f -name "${id}_*" || _note_not_found_error
+}
+
+# Generate a note id
+__note_gen_id() {
+  # Increment the id if it exists otherwise set it to 1
+  [ -f "$lastid_file" ] && previd=$(cat "$lastid_file")
+  [ "$previd" ] && id=$(($previd+1)) || id=1
+  echo "$id"
+}
+
+# Make note tags
+__note_formatted_tags() {
+  echo "$tags" | sed -e 's/ /_/g'
+}
+
+# Append a tag
+__note_append_tag() {
+  tag="$1"
+  if [ "$tags" ]; then
+    tags="${tags} ${tag}"
+  else
+    tags="$tag"
+  fi
+}
+
+action="$1"; shift
+
+# Directory was set first (namespacing)
+if [ "$action" = "-d" ]; then
+  notedir="$1"; shift
+  action="$1"
+fi
+
+while getopts ":d:t:" opt; do
+  case "$opt" in
+    d) notedir="$OPTARG";;
+    t) __note_append_tag "$OPTARG";;
+  esac
+done
+
+[ ! "$notedir" ] && notedir="$HOME/.notes"
+
+# Keep a count of where we are on note ids
+lastid_file="$notedir/.note_lastid"
+
+case "$action" in
+  new) _note_new "$@";;
+  edit) _note_edit "$@";;
+  show) _note_show "$@";;
+  delete) _note_delete "$@";;
+  list) _note_list "$@";;
+  *) _note_usage;;
+esac
