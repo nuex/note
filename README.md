@@ -1,7 +1,12 @@
 note
 ====
 
-`note` is a program for storing, retrieving, and searching for notes. `note` can accept input from stdin or the editor defined in `$VISUAL`.
+note is a program for storing, retrieving, and searching for notes. note can accept input from stdin or an editor defined by `$VISUAL`.
+
+## Installation
+
+    curl -silent -G https://raw.github.com/nuex/note/master/note > ~/bin/note
+    chmod +x ~/bin/note
 
 ## Usage
 
@@ -16,50 +21,43 @@ note
 
     echo "this is a note" | note new -t simple -t hello_world
 
-### Namespacing
+### Examples:
 
-Use the `-d` option to set a custom directory for notes. You can create an alias that prepends the directory to the note command to split notes with different contexts:
+Create notes:
 
-    alias bmark="note -d ~/.bmark"
-
-## DESCRIPTION:
-
-
-## EXAMPLES:
-
-    # create a new note with three different tags
-    cat <<! | note new -t tag -t tag2 -t anothertag
+    cat <<EOS | note new -t tag -t tag2 -t anothertag
     This is my note.
     This is another sentence.
-    !
+    EOS
 
-    # create a new note in an editor
-    note new -t tag -t tag2 -t anothertag
+    VISUAL=vim note new -t tag -t tag2 -t anothertag
 
-    # edit note 1
+Editing notes:
+
     note edit 1
 
-    # get notes matching the tag "nice"
-    note list -t nice
+Listing notes:
 
-    # get all notes
     note list
-
-    # get all notes in a different directory
+    note list -t nice
     note list -d directory
 
-    # get a note by its ID
+Show a note:
+
     note show 2
 
-    # delete note 2
+Deleting:
+
     note delete 2
 
 ### Namespacing
 
-For example, to use note to store bookmarks, use the following alias:
+A cool trick is to use bash aliases to make commands for storing notes in different contexts. For example, to store recipes:
 
-    alias bmark="note -d ~/.bmark"
+    alias recipe="note -d ~/.recipes"
+    recipe new -t breakfast -t vegan
 
-Add a bookmark:
+Other possibilities:
 
-    echo "http://nu-ex.com" | bmark new -t nerd
+    alias bookmark="note -d ~/.bookmarks"
+    alias password="note -d ~/.passwords"
