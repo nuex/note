@@ -16,14 +16,9 @@ _note_new() {
   id="$(__note_gen_id)"
   file="$(__note_file "$id")"
 
-  if [ -t 0 ]; then
-    [ "$VISUAL" ] && exec "$VISUAL" "$file"
-    _note_error "Could not open editor. Is \$VISUAL set?"
-  else
-    while read -r line; do
-      echo "$line" >> "$file"
-    done
-  fi
+  # If no input came from STDIN open the file in an editor,
+  # otherwise, write the input to a file.
+  [ -t 0 ] && { __note_open "$file"; } || { __note_write "$file"; }
 
   # Track the new id
   echo $id > "$lastid_file"
@@ -33,11 +28,7 @@ _note_new() {
 _note_show() {
   id="$1"; shift
   note="$(__note_find "$id")"
-  if [ "$note" ]; then
-    cat "$note"
-  else
-    _note_not_found_error
-  fi
+  [ "$note" ] && { cat "$note"; } || _note_not_found_error
 }
 
 # List notes
@@ -68,11 +59,7 @@ _note_list() {
 _note_edit() {
   id="$1"; shift
   note="$(__note_find "$id")"
-  if [ "$note" ]; then
-    exec "$VISUAL" "$note"
-  else
-    _note_not_found_error
-  fi
+  [ "$note" ] && { __note_open "$note"; } || _note_not_found_error
 }
 
 # Delete a note
@@ -134,6 +121,24 @@ __note_append_tag() {
     tags="${tags} ${tag}"
   else
     tags="$tag"
+  fi
+}
+
+# Write stdin to a file
+__note_write() {
+  file="$1"; shift
+  while read -r line; do
+    echo "$line" >> "$file"
+  done
+}
+
+# Open a file in an editor
+__note_open() {
+  file="$1"; shift
+  if [ "$VISUAL" ]; then
+    exec "$VISUAL" "$file"
+  else
+    _note_error "Could not open editor. Is \$VISUAL set?"
   fi
 }
 
