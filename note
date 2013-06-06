@@ -44,7 +44,7 @@ _note_show() {
 _note_list() {
   set -- -type f
   find_instructions="$(echo "$tags" | sed 's/ / or /g')"
-  for instruction in $find_cmd; do
+  for instruction in $find_instructions; do
     if [ "$instruction" == "or" ]; then
       set -- "$@" -o
     else
@@ -142,7 +142,7 @@ action="$1"; shift
 # Directory was set first (namespacing)
 if [ "$action" = "-d" ]; then
   notedir="$1"; shift
-  action="$1"
+  action="$1"; shift
 fi
 
 while getopts ":d:t:" opt; do
