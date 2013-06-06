@@ -70,7 +70,7 @@ _note_delete() {
 
 _note_usage() {
   cat <<!
-Usage: t action [options]
+Usage: note action [options]
 actions:
     new - create a note
     show - display a note
