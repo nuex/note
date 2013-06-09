@@ -9,8 +9,7 @@ note is a program for storing, retrieving, and searching for notes. note can acc
     chmod +x ~/bin/note
 
 If you do not already have a ~/bin directory and have it in your $PATH (check
-using `echo $PATH`) you can
-prexifx the preceding commands with the following
+using `echo $PATH`) you can prefix the preceding commands with the following:
 
     mkdir -p ~/bin
     echo "PATH=\$PATH:~/bin" >> ~/.bashrc
