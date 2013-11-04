@@ -16,12 +16,12 @@ _note_new() {
   id="$(__note_gen_id)"
   file="$(__note_file "$id")"
 
+  # Track the new id
+  echo "$id" > "$lastid_file"
+
   # If no input came from STDIN open the file in an editor,
   # otherwise, write the input to a file.
   [ -t 0 ] && { __note_open "$file"; } || { __note_write "$file"; }
-
-  # Track the new id
-  echo "$id" > "$lastid_file"
 }
 
 # Show a note
