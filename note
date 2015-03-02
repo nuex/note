@@ -135,8 +135,10 @@ __note_write() {
 # Open a file in an editor
 __note_open() {
   file="$1"; shift
-  if [ "$VISUAL" ]; then
-    exec "$VISUAL" "$file"
+  [ "$VISUAL" ] && editor="$VISUAL"
+  [ "$EDITOR" ] && editor="$EDITOR"
+  if [ "$editor" ]; then
+    exec "$editor" "$file"
   else
     _note_error "Could not open editor. Is \$VISUAL set?"
   fi
